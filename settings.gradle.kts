@@ -1,18 +1,13 @@
 pluginManagement {
     repositories {
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
+        google()
         mavenCentral()
-        gradlePluginPortal()
+        gradlePluginPortal() // ✅ Ensure plugin resolution
     }
 }
+
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
@@ -20,4 +15,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "StayEaseApp"
-include(":app")
+include(":app") // ✅ Ensures 'app' module is included

@@ -1,0 +1,991 @@
+Index: app/src/main/java/com/example/stayeaseapp/ui/theme/Theme.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/stayeaseapp/ui/theme/Theme.kt b/app/src/main/java/com/example/stayeaseapp/ui/theme/Theme.kt
+--- a/app/src/main/java/com/example/stayeaseapp/ui/theme/Theme.kt	
++++ b/app/src/main/java/com/example/stayeaseapp/ui/theme/Theme.kt	(date 1745778819162)
+@@ -1,27 +1,25 @@
+ package com.example.stayeaseapp.ui.theme
+ 
+ import androidx.compose.material3.MaterialTheme
+-import androidx.compose.material3.Typography
+ import androidx.compose.material3.lightColorScheme
+ import androidx.compose.runtime.Composable
+-import androidx.compose.ui.graphics.Color
+ 
+ private val LightColorScheme = lightColorScheme(
+-    primary = Color(0xFF6200EE),
+-    secondary = Color(0xFF03DAC5),
+-    background = Color(0xFFFFFFFF),
+-    surface = Color(0xFFFFFFFF),
+-    onPrimary = Color.White,
+-    onSecondary = Color.Black,
+-    onBackground = Color.Black,
+-    onSurface = Color.Black
++    primary = androidx.compose.ui.graphics.Color(0xFF6200EE),
++    secondary = androidx.compose.ui.graphics.Color(0xFF03DAC5),
++    background = androidx.compose.ui.graphics.Color(0xFFFFFFFF),
++    surface = androidx.compose.ui.graphics.Color(0xFFFFFFFF),
++    onPrimary = androidx.compose.ui.graphics.Color.White,
++    onSecondary = androidx.compose.ui.graphics.Color.Black,
++    onBackground = androidx.compose.ui.graphics.Color.Black,
++    onSurface = androidx.compose.ui.graphics.Color.Black
+ )
+ 
+ @Composable
+ fun StayEaseAppTheme(content: @Composable () -> Unit) {
+     MaterialTheme(
+         colorScheme = LightColorScheme,
+-        typography = Typography(),
++        typography = androidx.compose.material3.Typography(),
+         content = content
+     )
+ }
+Index: app/src/main/java/com/example/stayeaseapp/ui/LoginScreen.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/stayeaseapp/ui/LoginScreen.kt b/app/src/main/java/com/example/stayeaseapp/ui/LoginScreen.kt
+--- a/app/src/main/java/com/example/stayeaseapp/ui/LoginScreen.kt	
++++ b/app/src/main/java/com/example/stayeaseapp/ui/LoginScreen.kt	(date 1745819818381)
+@@ -1,63 +1,92 @@
+ package com.example.stayeaseapp.ui
+ 
+-import android.widget.Toast
+ import androidx.compose.foundation.layout.*
+-import androidx.compose.material3.*
++import androidx.compose.foundation.text.KeyboardOptions
++import androidx.compose.material.*
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.filled.Visibility
++import androidx.compose.material.icons.filled.VisibilityOff
+ import androidx.compose.runtime.*
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+-import androidx.compose.ui.platform.LocalContext
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.text.input.KeyboardType
+ import androidx.compose.ui.text.input.PasswordVisualTransformation
++import androidx.compose.ui.text.input.VisualTransformation
+ import androidx.compose.ui.unit.dp
++import androidx.compose.ui.unit.sp
++import androidx.lifecycle.viewmodel.compose.viewModel
+ import androidx.navigation.NavController
+ import com.example.stayeaseapp.viewmodel.LoginViewModel
++import kotlinx.coroutines.launch
+ 
+ @Composable
+-fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
+-    val context = LocalContext.current
+-    var email by remember { mutableStateOf("") }
+-    var password by remember { mutableStateOf("") }
+-    val errorMessage by viewModel.errorMessage.collectAsState()
++fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = viewModel()) {
++    val emailState = remember { mutableStateOf("") }
++    val passwordState = remember { mutableStateOf("") }
++    val showPassword = remember { mutableStateOf(false) }
++
++    val loginState by loginViewModel.loginState.collectAsState()
++    val errorMessage by loginViewModel.errorMessage.collectAsState()
++
++    val coroutineScope = rememberCoroutineScope()
+ 
+     Column(
+         modifier = Modifier
+             .fillMaxSize()
+-            .padding(32.dp),
++            .padding(24.dp),
+         verticalArrangement = Arrangement.Center,
+         horizontalAlignment = Alignment.CenterHorizontally
+     ) {
+-        Text(text = "StayEase Login", style = MaterialTheme.typography.headlineSmall)
++        Text("StayEase Login", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+ 
+-        Spacer(modifier = Modifier.height(20.dp))
++        Spacer(modifier = Modifier.height(24.dp))
+ 
+         OutlinedTextField(
+-            value = email,
+-            onValueChange = { email = it },
+-            label = { Text("Email") }
++            value = emailState.value,
++            onValueChange = { emailState.value = it },
++            label = { Text("Email (psgtech.ac.in only)") },
++            singleLine = true,
++            modifier = Modifier.fillMaxWidth()
+         )
+ 
+-        Spacer(modifier = Modifier.height(8.dp))
++        Spacer(modifier = Modifier.height(16.dp))
+ 
+         OutlinedTextField(
+-            value = password,
+-            onValueChange = { password = it },
++            value = passwordState.value,
++            onValueChange = { passwordState.value = it },
+             label = { Text("Password") },
+-            visualTransformation = PasswordVisualTransformation()
++            singleLine = true,
++            modifier = Modifier.fillMaxWidth(),
++            visualTransformation = if (showPassword.value) VisualTransformation.None else PasswordVisualTransformation(),
++            trailingIcon = {
++                IconButton(onClick = { showPassword.value = !showPassword.value }) {
++                    Icon(
++                        imageVector = if (showPassword.value) Icons.Default.Visibility else Icons.Default.VisibilityOff,
++                        contentDescription = if (showPassword.value) "Hide Password" else "Show Password"
++                    )
++                }
++            },
++            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+         )
+ 
+-        Spacer(modifier = Modifier.height(16.dp))
++        Spacer(modifier = Modifier.height(24.dp))
+ 
+         Button(
+             onClick = {
+-                viewModel.login(email, password) { success ->
+-                    if (success) {
+-                        Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
+-                        navController.navigate("dashboard/${email}") {
+-                            popUpTo("login") { inclusive = true } // ✅ Prevent back to login
+-                        }
+-                    } else {
+-                        Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
+-                    }
++                coroutineScope.launch {
++                    loginViewModel.login(
++                        email = emailState.value.trim(),
++                        password = passwordState.value,
++                        onLoginComplete = { success ->
++                            if (success) {
++                                val user = loginViewModel.loginState.value
++                                user?.email?.let { email ->
++                                    navController.navigate("dashboard/$email") // ✅ Correct route
++                                }
++                            }
++                        }
++                    )
+                 }
+             },
+             modifier = Modifier.fillMaxWidth()
+@@ -65,9 +94,13 @@
+             Text("Login")
+         }
+ 
+-        errorMessage?.let {
++        if (!errorMessage.isNullOrEmpty()) {
+             Spacer(modifier = Modifier.height(16.dp))
+-            Text(text = it, color = MaterialTheme.colorScheme.error)
++            Text(
++                text = errorMessage ?: "",
++                color = MaterialTheme.colors.error,
++                fontSize = 14.sp
++            )
+         }
+     }
+ }
+Index: app/src/main/java/com/example/stayeaseapp/ui/DashboardScreen.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/stayeaseapp/ui/DashboardScreen.kt b/app/src/main/java/com/example/stayeaseapp/ui/DashboardScreen.kt
+--- a/app/src/main/java/com/example/stayeaseapp/ui/DashboardScreen.kt	
++++ b/app/src/main/java/com/example/stayeaseapp/ui/DashboardScreen.kt	(date 1745819761865)
+@@ -25,16 +25,12 @@
+             .whereEqualTo("email", email)
+             .get()
+             .addOnSuccessListener { result ->
+-                if (result.isEmpty) {
+-                    Log.e("DashboardScreen", "No student found with email: $email")
+-                } else {
+-                    for (document in result) {
+-                        name = document.getString("name") ?: ""
+-                        course = document.getString("course") ?: ""
+-                        className = document.getString("class") ?: ""
+-                        roomNo = document.getString("room_no") ?: ""
+-                        Log.d("DashboardScreen", "Fetched user: $name, $course, $className, $roomNo")
+-                    }
++                if (!result.isEmpty) {
++                    val document = result.documents.first()
++                    name = document.getString("name") ?: ""
++                    course = document.getString("course") ?: ""
++                    className = document.getString("class") ?: "" // Correct: 'class' field
++                    roomNo = document.getString("room_no") ?: ""   // Correct: 'room_no' field
+                 }
+                 isLoading = false
+             }
+@@ -56,7 +52,10 @@
+             horizontalAlignment = Alignment.CenterHorizontally,
+             verticalArrangement = Arrangement.spacedBy(12.dp)
+         ) {
+-            Text(text = "Welcome, $name!", style = MaterialTheme.typography.headlineMedium)
++            Text(
++                text = "Welcome, $name!",
++                style = MaterialTheme.typography.headlineMedium // Material3
++            )
+ 
+             Spacer(modifier = Modifier.height(16.dp))
+ 
+@@ -71,38 +70,46 @@
+                 .fillMaxWidth()
+                 .padding(vertical = 6.dp)
+ 
+-            Button(onClick = { navController.navigate("foodMenu") }, modifier = buttonModifier) {
++            Button(
++                onClick = { navController.navigate("foodMenu") },
++                modifier = buttonModifier
++            ) {
+                 Text("🍽️ Food Menu")
+             }
+ 
+-            // Fixed: Added proper navigation with parameters
+             Button(
+                 onClick = {
+-                    // Encode the parameters to handle special characters
+                     val encodedEmail = java.net.URLEncoder.encode(email, "UTF-8")
+                     val encodedName = java.net.URLEncoder.encode(name, "UTF-8")
+-                    navController.navigate("preorders/$encodedEmail/$encodedName")
++                    navController.navigate("preorder/$encodedEmail/$encodedName")
+                 },
+                 modifier = buttonModifier
+             ) {
+                 Text("📌 Preorder Meal")
+             }
+ 
+-            Button(onClick = { navController.navigate("leave_application") }, modifier = buttonModifier) {
++            Button(
++                onClick = { navController.navigate("leave_application") },
++                modifier = buttonModifier
++            ) {
+                 Text("✈️ Leave Application")
+             }
+ 
+             Button(
+                 onClick = {
+-                    val studentId = email
+-                    navController.navigate("complaint/$studentId/$name")
++                    val studentId = java.net.URLEncoder.encode(email, "UTF-8")
++                    val studentName = java.net.URLEncoder.encode(name, "UTF-8")
++                    navController.navigate("complaint/$studentId/$studentName")
+                 },
+                 modifier = buttonModifier
+             ) {
+                 Text("⚠️ Complaint Module")
+             }
+ 
+-            Button(onClick = { navController.navigate("profile") }, modifier = buttonModifier) {
++            Button(
++                onClick = { navController.navigate("profile") },
++                modifier = buttonModifier
++            ) {
+                 Text("👤 Profile")
+             }
+ 
+@@ -121,4 +128,4 @@
+             }
+         }
+     }
+-}
+\ No newline at end of file
++}
+Index: app/src/main/java/com/example/stayeaseapp/ui/PreorderScreen.kt
+===================================================================
+diff --git a/app/src/main/java/com/example/stayeaseapp/ui/PreorderScreen.kt b/app/src/main/java/com/example/stayeaseapp/ui/PreorderScreen.kt
+deleted file mode 100644
+--- a/app/src/main/java/com/example/stayeaseapp/ui/PreorderScreen.kt	
++++ /dev/null	
+@@ -1,342 +0,0 @@
+-// 📁 File: ui/PreorderScreen.kt
+-package com.example.stayeaseapp.ui
+-
+-import android.util.Log
+-import android.widget.Toast
+-import androidx.compose.foundation.Image
+-import androidx.compose.foundation.layout.*
+-import androidx.compose.foundation.lazy.LazyColumn
+-import androidx.compose.foundation.lazy.items
+-import androidx.compose.foundation.shape.RoundedCornerShape
+-import androidx.compose.material3.*
+-import androidx.compose.runtime.*
+-import androidx.compose.ui.Alignment
+-import androidx.compose.ui.Modifier
+-import androidx.compose.ui.layout.ContentScale
+-import androidx.compose.ui.platform.LocalContext
+-import androidx.compose.ui.text.font.FontWeight
+-import androidx.compose.ui.unit.dp
+-import androidx.compose.ui.unit.sp
+-import androidx.navigation.NavController
+-import coil.compose.rememberAsyncImagePainter
+-import com.google.firebase.Timestamp
+-import com.google.firebase.firestore.FirebaseFirestore
+-import com.google.firebase.firestore.Query
+-import com.google.firebase.firestore.ktx.toObject
+-import kotlinx.coroutines.tasks.await
+-import java.text.SimpleDateFormat
+-import androidx.compose.material.icons.Icons
+-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+-import androidx.compose.material3.Text
+-
+-import java.util.*
+-
+-// Data class for menu item from preorders collection
+-data class MenuItem(
+-    val id: String = "",
+-    val createdAt: Timestamp? = null, // ← use Firebase Timestamp
+-    val day: String = "",
+-    val deadline: String = "",
+-    val food: String = "",
+-    val imageUrl: String = ""
+-)
+-
+-// Data class for student's order in preorderslist collection
+-data class PreorderItem(
+-    val id: String = "",
+-    val studentId: String = "",
+-    val studentName: String = "",
+-    val menuItemId: String = "",
+-    val food: String = "",
+-    val day: String = "",
+-    val quantity: Int = 1,
+-    val orderTime: String = "",
+-    val status: String = "pending"
+-)
+-@OptIn(ExperimentalMaterial3Api::class)
+-@Composable
+-fun PreorderScreen(navController: NavController, studentEmail: String, studentName: String) {
+-    val context = LocalContext.current
+-    var menuItems by remember { mutableStateOf(listOf<MenuItem>()) }
+-    var preorderItems by remember { mutableStateOf(listOf<PreorderItem>()) }
+-    val db = FirebaseFirestore.getInstance()
+-    Scaffold(
+-        topBar = {
+-            TopAppBar(
+-                title = { Text("Preorder Menu") },
+-                navigationIcon = {
+-                    IconButton(onClick = { navController.popBackStack() }) {
+-                        Icon(
+-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+-                            contentDescription = "Back"
+-                        )
+-                    }
+-                }
+-            )
+-        }
+-    ) { innerPadding ->
+-        Column(
+-            modifier = Modifier
+-                .fillMaxSize()
+-                .padding(innerPadding)
+-                .padding(16.dp)
+-        ) {
+-            // Everything else inside here (your previous Column content)
+-        }
+-    }
+-
+-    // Function to refresh orders
+-    val refreshOrders = {
+-        db.collection("preorderslist")
+-            .whereEqualTo("studentId", studentEmail)
+-            .orderBy("orderTime", Query.Direction.DESCENDING)
+-            .get()
+-            .addOnSuccessListener { snapshot ->
+-                preorderItems = snapshot.documents.mapNotNull { doc ->
+-                    val item = doc.toObject(PreorderItem::class.java)
+-                    item?.copy(id = doc.id)
+-                }
+-            }
+-            .addOnFailureListener {
+-                Toast.makeText(context, "Failed to refresh orders", Toast.LENGTH_SHORT).show()
+-            }
+-    }
+-
+-    LaunchedEffect(true) {
+-        try {
+-            // Fetch menu items from preorders collection
+-            val menuSnapshot = db.collection("preorders")
+-                .get()
+-                .await()
+-            
+-            menuItems = menuSnapshot.documents.mapNotNull { doc ->
+-                val item = doc.toObject<MenuItem>()
+-                item?.copy(id = doc.id)
+-            }
+-
+-            // Initial fetch of orders
+-            refreshOrders()
+-        } catch (e: Exception) {
+-            Log.e("PreorderScreen", "Error fetching data", e)
+-            Toast.makeText(context, "Error loading data", Toast.LENGTH_SHORT).show()
+-        }
+-    }
+-
+-    Column(
+-        modifier = Modifier
+-            .fillMaxSize()
+-            .padding(16.dp)
+-    ) {
+-        Text(
+-            text = "Available Menu Items",
+-            fontSize = 20.sp,
+-            fontWeight = FontWeight.Bold,
+-            modifier = Modifier.padding(bottom = 8.dp)
+-        )
+-
+-        LazyColumn(
+-            verticalArrangement = Arrangement.spacedBy(12.dp),
+-            modifier = Modifier.weight(1f)
+-        ) {
+-            items(menuItems) { menuItem ->
+-                MenuItemCard(
+-                    menuItem = menuItem,
+-                    studentEmail = studentEmail,
+-                    studentName = studentName,
+-                    db = db,
+-                    navController = navController,
+-                    onOrderPlaced = { refreshOrders() }
+-                )
+-            }
+-        }
+-
+-        Spacer(modifier = Modifier.height(16.dp))
+-
+-        Text(
+-            text = "Your Preorders",
+-            fontSize = 20.sp,
+-            fontWeight = FontWeight.Bold,
+-            modifier = Modifier.padding(bottom = 8.dp)
+-        )
+-
+-        LazyColumn(
+-            verticalArrangement = Arrangement.spacedBy(8.dp),
+-            modifier = Modifier.weight(1f)
+-        ) {
+-            items(preorderItems) { item ->
+-                PreorderCard(
+-                    item = item,
+-                    db = db,
+-                    onOrderCancelled = { refreshOrders() }
+-                )
+-            }
+-        }
+-    }
+-}
+-
+-@Composable
+-fun MenuItemCard(
+-    menuItem: MenuItem,
+-    studentEmail: String,
+-    studentName: String,
+-    db: FirebaseFirestore,
+-    navController: NavController,
+-    onOrderPlaced: () -> Unit
+-) {
+-    var quantity by remember { mutableStateOf(1) }
+-    val context = LocalContext.current
+-
+-    Card(
+-        modifier = Modifier.fillMaxWidth(),
+-        shape = RoundedCornerShape(16.dp),
+-        elevation = CardDefaults.cardElevation(6.dp)
+-    ) {
+-        Column(
+-            modifier = Modifier.padding(16.dp)
+-        ) {
+-            // Display menu item image from Cloudinary
+-            Image(
+-                painter = rememberAsyncImagePainter(menuItem.imageUrl),
+-                contentDescription = null,
+-                modifier = Modifier
+-                    .fillMaxWidth()
+-                    .height(160.dp),
+-                contentScale = ContentScale.Crop
+-            )
+-
+-            Spacer(modifier = Modifier.height(8.dp))
+-
+-            Text(
+-                text = "🍽️ ${menuItem.food}",
+-                fontSize = 18.sp,
+-                fontWeight = FontWeight.Bold
+-            )
+-            Text(text = "📅 ${menuItem.day}", fontSize = 14.sp)
+-            Text(text = "⏰ Deadline: ${menuItem.deadline}", fontSize = 14.sp)
+-
+-            Spacer(modifier = Modifier.height(8.dp))
+-
+-            Row(
+-                verticalAlignment = Alignment.CenterVertically,
+-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+-            ) {
+-                Text("Quantity:", fontSize = 16.sp)
+-                Button(onClick = { if (quantity > 1) quantity-- }) { Text("-") }
+-                Text("$quantity", fontSize = 18.sp)
+-                Button(onClick = { if (quantity < 5) quantity++ }) { Text("+") }
+-            }
+-
+-            Spacer(modifier = Modifier.height(12.dp))
+-
+-            Button(
+-                onClick = {
+-                    val currentTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+-                        .format(Date())
+-
+-                    val preorder = hashMapOf(
+-                        "studentId" to studentEmail,
+-                        "studentName" to studentName,
+-                        "menuItemId" to menuItem.id,
+-                        "food" to menuItem.food,
+-                        "day" to menuItem.day,
+-                        "quantity" to quantity,
+-                        "orderTime" to currentTime,
+-                        "status" to "pending"
+-                    )
+-
+-                    // Add to preorderslist collection (creates it if doesn't exist)
+-                    db.collection("preorderslist")
+-                        .add(preorder)
+-                        .addOnSuccessListener { documentRef ->
+-                            // Create QR code data
+-                            val qrData = """
+-                                Order ID: ${documentRef.id}
+-                                Student: $studentName
+-                                Food: ${menuItem.food}
+-                                Day: ${menuItem.day}
+-                                Quantity: $quantity
+-                                Time: $currentTime
+-                            """.trimIndent()
+-
+-                            // Navigate to success screen with QR data
+-                            navController.navigate("qrSuccess/${qrData}")
+-                            
+-                            quantity = 1
+-                            onOrderPlaced()
+-                        }
+-                        .addOnFailureListener {
+-                            Toast.makeText(context, "Failed to place order ❌", Toast.LENGTH_SHORT).show()
+-                        }
+-                },
+-                modifier = Modifier.fillMaxWidth()
+-            ) {
+-                Text("Place Order")
+-            }
+-        }
+-    }
+-}
+-
+-@Composable
+-fun PreorderCard(
+-    item: PreorderItem,
+-    db: FirebaseFirestore,
+-    onOrderCancelled: () -> Unit
+-) {
+-    val context = LocalContext.current
+-
+-    Card(
+-        modifier = Modifier.fillMaxWidth(),
+-        shape = RoundedCornerShape(16.dp),
+-        elevation = CardDefaults.cardElevation(4.dp)
+-    ) {
+-        Column(
+-            modifier = Modifier.padding(16.dp)
+-        ) {
+-            Text(
+-                text = "🍽️ ${item.food}",
+-                fontSize = 18.sp,
+-                fontWeight = FontWeight.Bold
+-            )
+-            Text(text = "📅 ${item.day}", fontSize = 14.sp)
+-            Text(text = "🔢 Quantity: ${item.quantity}", fontSize = 14.sp)
+-            Text(text = "🕒 Order Time: ${item.orderTime}", fontSize = 14.sp)
+-            Text(
+-                text = "📋 Status: ${item.status}",
+-                fontSize = 14.sp,
+-                color = when (item.status) {
+-                    "pending" -> androidx.compose.ui.graphics.Color.Blue
+-                    "completed" -> androidx.compose.ui.graphics.Color.Green
+-                    "cancelled" -> androidx.compose.ui.graphics.Color.Red
+-                    else -> androidx.compose.ui.graphics.Color.Gray
+-                }
+-            )
+-
+-            Spacer(modifier = Modifier.height(8.dp))
+-
+-            Row(
+-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+-            ) {
+-                if (item.status == "pending") {
+-                    Button(
+-                        onClick = {
+-                            db.collection("preorderslist").document(item.id)
+-                                .update("status", "cancelled")
+-                                .addOnSuccessListener {
+-                                    Toast.makeText(context, "Order cancelled", Toast.LENGTH_SHORT).show()
+-                                    onOrderCancelled()
+-                                }
+-                                .addOnFailureListener {
+-                                    Toast.makeText(context, "Failed to cancel order", Toast.LENGTH_SHORT).show()
+-                                }
+-                        }
+-                    ) {
+-                        Text("Cancel Order")
+-                    }
+-                }
+-            }
+-        }
+-    }
+-}
+-
+-// ✅ Add navigation route in MainActivity.kt
+-// composable("preorder") { PreorderScreen(navController, email, name) }
+Index: app/src/main/java/com/example/stayeaseapp/ui/PreorderSuccessScreen.kt
+===================================================================
+diff --git a/app/src/main/java/com/example/stayeaseapp/ui/PreorderSuccessScreen.kt b/app/src/main/java/com/example/stayeaseapp/ui/PreorderSuccessScreen.kt
+deleted file mode 100644
+--- a/app/src/main/java/com/example/stayeaseapp/ui/PreorderSuccessScreen.kt	
++++ /dev/null	
+@@ -1,86 +0,0 @@
+-package com.example.stayeaseapp.ui
+-
+-import android.graphics.Bitmap
+-import android.graphics.Color
+-import androidx.compose.foundation.Image
+-import androidx.compose.foundation.layout.*
+-import androidx.compose.material3.*
+-import androidx.compose.runtime.*
+-import androidx.compose.ui.Alignment
+-import androidx.compose.ui.Modifier
+-import androidx.compose.ui.graphics.asImageBitmap
+-import androidx.compose.ui.layout.ContentScale
+-import androidx.compose.ui.platform.LocalContext
+-import androidx.compose.ui.unit.dp
+-import androidx.navigation.NavController
+-import com.google.zxing.BarcodeFormat
+-import com.google.zxing.qrcode.QRCodeWriter
+-
+-@Composable
+-fun PreorderSuccessScreen(data: String, navController: NavController) {
+-    val context = LocalContext.current
+-
+-    // Generate QR code bitmap
+-    val qrBitmap = remember(data) {
+-        val writer = QRCodeWriter()
+-        val bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, 512, 512)
+-        val width = bitMatrix.width
+-        val height = bitMatrix.height
+-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+-
+-        for (x in 0 until width) {
+-            for (y in 0 until height) {
+-                bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
+-            }
+-        }
+-        bitmap
+-    }
+-
+-    Column(
+-        modifier = Modifier
+-            .fillMaxSize()
+-            .padding(24.dp),
+-        horizontalAlignment = Alignment.CenterHorizontally,
+-        verticalArrangement = Arrangement.Center
+-    ) {
+-        Text("✅ Preorder Successful!", style = MaterialTheme.typography.headlineSmall)
+-        Spacer(modifier = Modifier.height(16.dp))
+-
+-        Text("📲 Please show this QR code to collect your meal.")
+-        Spacer(modifier = Modifier.height(16.dp))
+-
+-        // Display generated QR code
+-        Image(
+-            bitmap = qrBitmap.asImageBitmap(),
+-            contentDescription = "QR Code",
+-            modifier = Modifier.size(200.dp),
+-            contentScale = ContentScale.FillBounds
+-        )
+-
+-        Spacer(modifier = Modifier.height(16.dp))
+-
+-        // Display order details
+-        Card(
+-            modifier = Modifier
+-                .fillMaxWidth()
+-                .padding(16.dp),
+-            elevation = CardDefaults.cardElevation(4.dp)
+-        ) {
+-            Column(
+-                modifier = Modifier.padding(16.dp)
+-            ) {
+-                Text("Order Details:", style = MaterialTheme.typography.titleMedium)
+-                Spacer(modifier = Modifier.height(8.dp))
+-                Text(data)
+-            }
+-        }
+-
+-        Spacer(modifier = Modifier.height(32.dp))
+-
+-        Button(onClick = {
+-            navController.popBackStack("dashboard", false)
+-        }) {
+-            Text("Back to Dashboard")
+-        }
+-    }
+-}
+\ No newline at end of file
+Index: app/src/main/java/com/example/stayeaseapp/viewmodel/LoginViewModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/stayeaseapp/viewmodel/LoginViewModel.kt b/app/src/main/java/com/example/stayeaseapp/viewmodel/LoginViewModel.kt
+--- a/app/src/main/java/com/example/stayeaseapp/viewmodel/LoginViewModel.kt	
++++ b/app/src/main/java/com/example/stayeaseapp/viewmodel/LoginViewModel.kt	(date 1745818334955)
+@@ -48,7 +48,7 @@
+ 
+         val request = object : JsonObjectRequest(
+             Request.Method.POST,
+-            "https://cb19-103-224-33-35.ngrok-free.app/api/auth/login", // ✅ No extra spaces
++            "https://ff73-14-139-180-67.ngrok-free.app/api/auth/login", // ✅ No extra spaces
+             requestBody,
+             { response ->
+                 val firebaseToken = response.optString("firebaseToken", null)
+Index: app/src/main/java/com/example/stayeaseapp/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/stayeaseapp/MainActivity.kt b/app/src/main/java/com/example/stayeaseapp/MainActivity.kt
+--- a/app/src/main/java/com/example/stayeaseapp/MainActivity.kt	
++++ b/app/src/main/java/com/example/stayeaseapp/MainActivity.kt	(date 1745778819145)
+@@ -8,9 +8,6 @@
+ import androidx.navigation.compose.*
+ import androidx.navigation.navArgument
+ import com.example.stayeaseapp.ui.*
+-import com.example.stayeaseapp.ui.PreorderScreen
+-import com.example.stayeaseapp.ui.PreorderSuccessScreen
+-import com.example.stayeaseapp.ui.theme.StayEaseAppTheme
+ import com.example.stayeaseapp.viewmodel.LoginViewModel
+ 
+ class MainActivity : ComponentActivity() {
+@@ -19,59 +16,29 @@
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+         setContent {
+-            StayEaseAppTheme {
+-                val navController = rememberNavController()
++            val navController = rememberNavController()
+ 
+-                NavHost(navController = navController, startDestination = "login") {
+-                    composable("login") {
+-                        LoginScreen(navController, loginViewModel)
+-                    }
++            NavHost(navController = navController, startDestination = "login") {
++                composable("login") {
++                    LoginScreen(navController, loginViewModel)
++                }
+ 
+-                    composable(
+-                        "dashboard/{email}",
+-                        arguments = listOf(navArgument("email") { type = NavType.StringType })
+-                    ) { backStackEntry ->
+-                        val email = backStackEntry.arguments?.getString("email") ?: "unknown"
+-                        DashboardScreen(navController, email)
+-                    }
++                composable(
++                    "dashboard/{email}",
++                    arguments = listOf(navArgument("email") { type = NavType.StringType })
++                ) { backStackEntry ->
++                    val email = backStackEntry.arguments?.getString("email") ?: "unknown"
++                    DashboardScreen(navController, email)
++                }
+ 
+-                    composable("foodMenu") {
+-                        FoodMenuScreen(navController)
+-                    }
++                composable("foodMenu") {
++                    FoodMenuScreen(navController)
++                }
+ 
+-                    composable(
+-                        "complaint/{studentId}/{studentName}",
+-                        arguments = listOf(
+-                            navArgument("studentId") { type = NavType.StringType },
+-                            navArgument("studentName") { type = NavType.StringType }
+-                        )
+-                    ) { backStackEntry ->
+-                        val studentId = backStackEntry.arguments?.getString("studentId") ?: "unknown"
+-                        val studentName = backStackEntry.arguments?.getString("studentName") ?: "unknown"
+-                        ComplaintScreen(navController, studentId, studentName)
+-                    }
+-
+-                    // ✅ New Preorder screen
+-                    composable(
+-                        "preorders/{studentEmail}/{studentName}",
+-                        arguments = listOf(
+-                            navArgument("studentEmail") { type = NavType.StringType },
+-                            navArgument("studentName") { type = NavType.StringType }
+-                        )
+-                    ) { backStackEntry ->
+-                        val studentEmail = backStackEntry.arguments?.getString("studentEmail") ?: ""
+-                        val studentName = backStackEntry.arguments?.getString("studentName") ?: ""
+-                        PreorderScreen(navController, studentEmail, studentName)
+-                    }
+-
+-                    composable(
+-                        "qrSuccess/{data}",
+-                        arguments = listOf(navArgument("data") { type = NavType.StringType })
+-                    ) { backStackEntry ->
+-                        val data = backStackEntry.arguments?.getString("data") ?: ""
+-                        PreorderSuccessScreen(data = data, navController = navController)
+-                    }
+-
++                composable("complaint/{studentId}/{studentName}") { backStackEntry ->
++                    val studentId = backStackEntry.arguments?.getString("studentId") ?: "unknown"
++                    val studentName = backStackEntry.arguments?.getString("studentName") ?: "unknown"
++                    ComplaintScreen(navController, studentId, studentName)
+                 }
+             }
+         }
+Index: app/build.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+--- a/app/build.gradle.kts	
++++ b/app/build.gradle.kts	(date 1745778732977)
+@@ -87,8 +87,4 @@
+     testImplementation("junit:junit:4.13.2")
+     androidTestImplementation("androidx.test.ext:junit:1.2.1")
+     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+-    implementation("io.coil-kt:coil-compose:2.4.0")
+-
+-    // ZXing for QR code generation
+-    implementation("com.google.zxing:core:3.5.2")
+ }
+Index: .idea/vcs.xml
+===================================================================
+diff --git a/.idea/vcs.xml b/.idea/vcs.xml
+deleted file mode 100644
+--- a/.idea/vcs.xml	
++++ /dev/null	
+@@ -1,6 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="VcsDirectoryMappings">
+-    <mapping directory="" vcs="Git" />
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/misc.xml
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+deleted file mode 100644
+--- a/.idea/misc.xml	
++++ /dev/null	
+@@ -1,9 +0,0 @@
+-<project version="4">
+-  <component name="ExternalStorageConfigurationManager" enabled="true" />
+-  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="jbr-21" project-jdk-type="JavaSDK">
+-    <output url="file://$PROJECT_DIR$/build/classes" />
+-  </component>
+-  <component name="ProjectType">
+-    <option name="id" value="Android" />
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/gradle.xml
+===================================================================
+diff --git a/.idea/gradle.xml b/.idea/gradle.xml
+deleted file mode 100644
+--- a/.idea/gradle.xml	
++++ /dev/null	
+@@ -1,20 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="GradleMigrationSettings" migrationVersion="1" />
+-  <component name="GradleSettings">
+-    <option name="linkedExternalProjectsSettings">
+-      <GradleProjectSettings>
+-        <option name="testRunner" value="CHOOSE_PER_TEST" />
+-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+-        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
+-        <option name="modules">
+-          <set>
+-            <option value="$PROJECT_DIR$" />
+-            <option value="$PROJECT_DIR$/app" />
+-          </set>
+-        </option>
+-        <option name="resolveExternalAnnotations" value="false" />
+-      </GradleProjectSettings>
+-    </option>
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/compiler.xml
+===================================================================
+diff --git a/.idea/compiler.xml b/.idea/compiler.xml
+deleted file mode 100644
+--- a/.idea/compiler.xml	
++++ /dev/null	
+@@ -1,6 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="CompilerConfiguration">
+-    <bytecodeTargetLevel target="21" />
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/runConfigurations.xml
+===================================================================
+diff --git a/.idea/runConfigurations.xml b/.idea/runConfigurations.xml
+deleted file mode 100644
+--- a/.idea/runConfigurations.xml	
++++ /dev/null	
+@@ -1,17 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="RunConfigurationProducerService">
+-    <option name="ignoredProducers">
+-      <set>
+-        <option value="com.intellij.execution.junit.AbstractAllInDirectoryConfigurationProducer" />
+-        <option value="com.intellij.execution.junit.AllInPackageConfigurationProducer" />
+-        <option value="com.intellij.execution.junit.PatternConfigurationProducer" />
+-        <option value="com.intellij.execution.junit.TestInClassConfigurationProducer" />
+-        <option value="com.intellij.execution.junit.UniqueIdConfigurationProducer" />
+-        <option value="com.intellij.execution.junit.testDiscovery.JUnitTestDiscoveryConfigurationProducer" />
+-        <option value="org.jetbrains.kotlin.idea.junit.KotlinJUnitRunConfigurationProducer" />
+-        <option value="org.jetbrains.kotlin.idea.junit.KotlinPatternConfigurationProducer" />
+-      </set>
+-    </option>
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/deploymentTargetSelector.xml
+===================================================================
+diff --git a/.idea/deploymentTargetSelector.xml b/.idea/deploymentTargetSelector.xml
+deleted file mode 100644
+--- a/.idea/deploymentTargetSelector.xml	
++++ /dev/null	
+@@ -1,10 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="deploymentTargetSelector">
+-    <selectionStates>
+-      <SelectionState runConfigName="app">
+-        <option name="selectionMode" value="DROPDOWN" />
+-      </SelectionState>
+-    </selectionStates>
+-  </component>
+-</project>
+\ No newline at end of file
+diff --git a/.idea/caches/deviceStreaming.xml b/.idea/caches/deviceStreaming.xml
+deleted file mode 100644
+diff --git a/.idea/kotlinc.xml b/.idea/kotlinc.xml
+deleted file mode 100644
+diff --git a/.idea/inspectionProfiles/Project_Default.xml b/.idea/inspectionProfiles/Project_Default.xml
+deleted file mode 100644

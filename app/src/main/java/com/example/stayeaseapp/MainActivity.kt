@@ -1,51 +1,64 @@
 package com.example.stayeaseapp
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import androidx.navigation.navArgument
-import com.example.stayeaseapp.ui.DashboardScreen
-import com.example.stayeaseapp.ui.LoginScreen
-import com.example.stayeaseapp.ui.theme.StayEaseAppTheme
+import com.example.stayeaseapp.ui.*
+import com.example.stayeaseapp.viewmodel.LoginViewModel
 
 class MainActivity : ComponentActivity() {
+    private val loginViewModel: LoginViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            StayEaseAppTheme {
-                val navController = rememberNavController()
+            val navController = rememberNavController()
 
-                NavHost(navController, startDestination = "login") {
-                    composable("login") {
-                        LoginScreen(navController,  this@MainActivity as Context) // ✅ Pass Correct Context
-                    }
-
-
-                    composable(
-                        "dashboard/{name}/{email}/{course}/{className}/{roomNo}",
-                        arguments = listOf(
-                            navArgument("name") { type = NavType.StringType },
-                            navArgument("email") { type = NavType.StringType },
-                            navArgument("course") { type = NavType.StringType },
-                            navArgument("className") { type = NavType.StringType },
-                            navArgument("roomNo") { type = NavType.StringType }
-                        )
-                    ) { backStackEntry ->
-                        DashboardScreen(
-                            navController = navController,
-                            name = backStackEntry.arguments?.getString("name") ?: "",
-                            email = backStackEntry.arguments?.getString("email") ?: "",
-                            course = backStackEntry.arguments?.getString("course") ?: "",
-                            className = backStackEntry.arguments?.getString("className") ?: "",
-                            roomNo = backStackEntry.arguments?.getString("roomNo") ?: ""
-                        )
-                    }
+            NavHost(navController = navController, startDestination = "login") {
+                composable("login") {
+                    LoginScreen(navController, loginViewModel)
                 }
+
+                composable(
+                    "dashboard/{email}",
+                    arguments = listOf(navArgument("email") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val email = backStackEntry.arguments?.getString("email") ?: "unknown"
+                    DashboardScreen(navController, email)
+                }
+
+                composable("foodMenu") {
+                    FoodMenuScreen(navController)
+                }
+                composable(
+                    "preorder/{email}/{name}",
+                    arguments = listOf(
+                        navArgument("email") { type = NavType.StringType },
+                        navArgument("name") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val email = backStackEntry.arguments?.getString("email") ?: ""
+                    val name = backStackEntry.arguments?.getString("name") ?: ""
+                    PreorderScreen(navController, email, name)
+                }
+                composable(
+                    "qrSuccess/{qrData}",
+                    arguments = listOf(navArgument("qrData") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val qrData = backStackEntry.arguments?.getString("qrData") ?: ""
+                    QRSuccessScreen(navController, qrData)
+                }
+
+                composable("complaint/{studentId}/{studentName}") { backStackEntry ->
+                    val studentId = backStackEntry.arguments?.getString("studentId") ?: "unknown"
+                    val studentName = backStackEntry.arguments?.getString("studentName") ?: "unknown"
+                    ComplaintScreen(navController, studentId, studentName)
+                }
+
             }
         }
     }

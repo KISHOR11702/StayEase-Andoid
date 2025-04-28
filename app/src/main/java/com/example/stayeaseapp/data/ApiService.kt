@@ -12,7 +12,7 @@ interface ApiService {
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
     companion object {
-        private const val BASE_URL = "http://localhost:5000/api/"
+        private const val BASE_URL = "http://192.168.1.100:5000/api/"
 
         fun create(): ApiService {
             val retrofit = Retrofit.Builder()
