@@ -48,7 +48,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
         val request = object : JsonObjectRequest(
             Request.Method.POST,
-            "https://85a8-14-139-180-67.ngrok-free.app/api/auth/login", // ✅ No extra spaces
+            " https://2aca-14-139-180-67.ngrok-free.app/api/auth/login", // ✅ No extra spaces
             requestBody,
             { response ->
                 val firebaseToken = response.optString("firebaseToken", null)

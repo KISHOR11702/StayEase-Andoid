@@ -52,6 +52,18 @@ class MainActivity : ComponentActivity() {
                     val qrData = backStackEntry.arguments?.getString("qrData") ?: ""
                     QRSuccessScreen(navController, qrData)
                 }
+                composable(
+                    "viewPreorders/{email}/{name}",
+                    arguments = listOf(
+                        navArgument("email") { type = NavType.StringType },
+                        navArgument("name") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val email = backStackEntry.arguments?.getString("email") ?: ""
+                    val name = backStackEntry.arguments?.getString("name") ?: ""
+                    ViewPreordersScreen(navController, email, name)
+                }
+
 
                 composable("complaint/{studentId}/{studentName}") { backStackEntry ->
                     val studentId = backStackEntry.arguments?.getString("studentId") ?: "unknown"
