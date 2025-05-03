@@ -93,4 +93,7 @@ dependencies {
 
 // QR code generation
     implementation("com.google.zxing:core:3.5.2")
+    //firebase messaging integration
+    implementation("com.google.firebase:firebase-messaging:23.4.1")
+    implementation ("com.google.firebase:firebase-inappmessaging-display:20.0.0")
 }
