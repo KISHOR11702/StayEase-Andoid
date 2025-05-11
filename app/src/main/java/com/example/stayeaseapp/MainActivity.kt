@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
+import com.example.stayease.ui.LeaveFormScreen
 import com.example.stayeaseapp.ui.*
 import com.example.stayeaseapp.viewmodel.LoginViewModel
 import com.google.firebase.messaging.FirebaseMessaging
@@ -18,7 +19,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 🔔 Subscribe to "allStudents" topic to receive deadline reminders
+        // 🔔 Subscribe to "allStudents" topic
         FirebaseMessaging.getInstance().subscribeToTopic("allStudents")
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -32,6 +33,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
 
             NavHost(navController = navController, startDestination = "login") {
+
                 composable("login") {
                     LoginScreen(navController, loginViewModel)
                 }
@@ -47,6 +49,7 @@ class MainActivity : ComponentActivity() {
                 composable("foodMenu") {
                     FoodMenuScreen(navController)
                 }
+
                 composable(
                     "preorder/{email}/{name}",
                     arguments = listOf(
@@ -58,6 +61,7 @@ class MainActivity : ComponentActivity() {
                     val name = backStackEntry.arguments?.getString("name") ?: ""
                     PreorderScreen(navController, email, name)
                 }
+
                 composable(
                     "qrSuccess/{qrData}",
                     arguments = listOf(navArgument("qrData") { type = NavType.StringType })
@@ -65,6 +69,7 @@ class MainActivity : ComponentActivity() {
                     val qrData = backStackEntry.arguments?.getString("qrData") ?: ""
                     QRSuccessScreen(navController, qrData)
                 }
+
                 composable(
                     "viewPreorders/{email}/{name}",
                     arguments = listOf(
@@ -81,6 +86,32 @@ class MainActivity : ComponentActivity() {
                     val studentId = backStackEntry.arguments?.getString("studentId") ?: "unknown"
                     val studentName = backStackEntry.arguments?.getString("studentName") ?: "unknown"
                     ComplaintScreen(navController, studentId, studentName)
+                }
+
+                // ✅ Leave Form Screen
+                composable(
+                    "leaveform/{email}/{name}",
+                    arguments = listOf(
+                        navArgument("email") { type = NavType.StringType },
+                        navArgument("name") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val email = backStackEntry.arguments?.getString("email") ?: ""
+                    val name = backStackEntry.arguments?.getString("name") ?: ""
+                    LeaveFormScreen(navController, email, name)
+                }
+
+                // ✅ Leave Pass Screen
+                composable(
+                    "leavepass/{email}/{name}",
+                    arguments = listOf(
+                        navArgument("email") { type = NavType.StringType },
+                        navArgument("name") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val email = backStackEntry.arguments?.getString("email") ?: ""
+                    val name = backStackEntry.arguments?.getString("name") ?: ""
+                    LeavePassScreen(navController, email, name)
                 }
             }
         }

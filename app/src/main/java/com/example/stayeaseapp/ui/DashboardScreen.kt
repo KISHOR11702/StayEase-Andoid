@@ -85,11 +85,14 @@ fun DashboardScreen(navController: NavController, email: String) {
 
 
             Button(
-                onClick = { navController.navigate("leave_application") },
+                onClick = {
+                    navController.navigate("leaveform/${email}/${name}")
+                },
                 modifier = buttonModifier
             ) {
                 Text("✈️ Leave Application")
             }
+
 
             Button(
                 onClick = {
