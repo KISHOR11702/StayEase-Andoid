@@ -1,5 +1,6 @@
 package com.example.stayeaseapp.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -30,6 +31,13 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
     val errorMessage by loginViewModel.errorMessage.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
+
+    // Check if user is already logged in
+    LaunchedEffect(loginState) {
+        if (loginState != null) {
+            navController.navigate("dashboard/${loginState?.email}") // Navigate to dashboard if logged in
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -82,7 +90,7 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
                             if (success) {
                                 val user = loginViewModel.loginState.value
                                 user?.email?.let { email ->
-                                    navController.navigate("dashboard/$email") // ✅ Correct route
+                                    navController.navigate("dashboard/${email}") // ✅ Correct route
                                 }
                             }
                         }
@@ -92,6 +100,13 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Login")
+        }
+
+        // Forgot password button
+        TextButton(onClick = {
+            navController.navigate("forgot_password")
+        }) {
+            Text("Forgot Password?")
         }
 
         if (!errorMessage.isNullOrEmpty()) {

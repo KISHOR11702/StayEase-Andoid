@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.*
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
@@ -19,7 +21,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 🔔 Subscribe to "allStudents" topic
         FirebaseMessaging.getInstance().subscribeToTopic("allStudents")
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -31,11 +32,34 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
+            val loginState by loginViewModel.loginState.collectAsState()
+
+            /**
+             * Automatically navigate on login/logout.
+             */
+            LaunchedEffect(loginState) {
+                loginState?.let { user ->
+                    user.email?.let { email ->
+                        navController.navigate("dashboard/$email") {
+                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                } ?: run {
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
 
             NavHost(navController = navController, startDestination = "login") {
-
                 composable("login") {
                     LoginScreen(navController, loginViewModel)
+                }
+
+                composable("forgot_password") {
+                    ForgotPasswordScreen(navController)
                 }
 
                 composable(
@@ -43,7 +67,7 @@ class MainActivity : ComponentActivity() {
                     arguments = listOf(navArgument("email") { type = NavType.StringType })
                 ) { backStackEntry ->
                     val email = backStackEntry.arguments?.getString("email") ?: "unknown"
-                    DashboardScreen(navController, email)
+                    DashboardScreen(navController, email, loginViewModel)
                 }
 
                 composable("foodMenu") {
@@ -88,7 +112,6 @@ class MainActivity : ComponentActivity() {
                     ComplaintScreen(navController, studentId, studentName)
                 }
 
-                // ✅ Leave Form Screen
                 composable(
                     "leaveform/{email}/{name}",
                     arguments = listOf(
@@ -101,7 +124,6 @@ class MainActivity : ComponentActivity() {
                     LeaveFormScreen(navController, email, name)
                 }
 
-                // ✅ Leave Pass Screen
                 composable(
                     "leavepass/{email}/{name}",
                     arguments = listOf(

@@ -1,4 +1,3 @@
-
 package com.example.stayeaseapp.viewmodel
 
 import android.app.Application
@@ -13,7 +12,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    private val _loginState = MutableStateFlow<FirebaseUser?>(null)
+    private val _loginState = MutableStateFlow<FirebaseUser?>(auth.currentUser) // Default to the current user
     val loginState: StateFlow<FirebaseUser?> = _loginState
 
     private val _errorMessage = MutableStateFlow<String?>(null)
@@ -40,5 +39,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
     }
-}
 
+    fun logout() {
+        auth.signOut()
+        _loginState.value = null
+    }
+}
